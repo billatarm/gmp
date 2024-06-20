@@ -47,6 +47,7 @@ define(`n',  `x2')
 
 ASM_START()
 PROLOGUE(mpn_copyd)
+	BTI_C
 	add	rp, rp, n, lsl #3
 	add	up, up, n, lsl #3
 
@@ -59,27 +60,34 @@ C Copy until rp is 128-bit aligned
 	sub	n, n, #1
 	str	x4, [rp,#-8]!
 
-L(al2):	ldp	x4,x5, [up,#-16]!
+L(al2):
+	ldp	x4,x5, [up,#-16]!
 	sub	n, n, #6
 	tbnz	n, #63, L(end)
 
 	ALIGN(16)
-L(top):	ldp	x6,x7, [up,#-16]
+L(top):
+	ldp	x6,x7, [up,#-16]
 	stp	x4,x5, [rp,#-16]
 	ldp	x4,x5, [up,#-32]!
 	stp	x6,x7, [rp,#-32]!
 	sub	n, n, #4
 	tbz	n, #63, L(top)
 
-L(end):	stp	x4,x5, [rp,#-16]!
+L(end):
+	stp	x4,x5, [rp,#-16]!
 
 C Copy last 0-3 limbs.  Note that rp is aligned after loop, but not when we
 C arrive here via L(bc)
-L(bc):	tbz	n, #1, L(tl1)
+L(bc):
+	tbz	n, #1, L(tl1)
 	ldp	x4,x5, [up,#-16]!
 	stp	x4,x5, [rp,#-16]!
-L(tl1):	tbz	n, #0, L(tl2)
+L(tl1):
+	tbz	n, #0, L(tl2)
 	ldr	x4, [up,#-8]
 	str	x4, [rp,#-8]
-L(tl2):	ret
+L(tl2):
+	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

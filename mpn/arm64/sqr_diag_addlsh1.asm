@@ -46,18 +46,21 @@ define(`n',  `x3')
 
 ASM_START()
 PROLOGUE(mpn_sqr_diag_addlsh1)
+	BTI_C
 	ldr	x15, [up],#8
 	lsr	x14, n, #1
 	tbz	n, #0, L(bx0)
 
-L(bx1):	adds	x7, xzr, xzr
+L(bx1):
+	adds	x7, xzr, xzr
 	mul	x12, x15, x15
 	ldr	x16, [up],#8
 	ldp	x4, x5, [tp],#16
 	umulh	x11, x15, x15
 	b	L(mid)
 
-L(bx0):	adds	x5, xzr, xzr
+L(bx0):
+	adds	x5, xzr, xzr
 	mul	x12, x15, x15
 	ldr	x17, [up],#16
 	ldp	x6, x7, [tp],#32
@@ -66,7 +69,8 @@ L(bx0):	adds	x5, xzr, xzr
 	cbz	x14, L(end)
 
 	ALIGN(16)
-L(top):	extr	x9, x6, x5, #63
+L(top):
+	extr	x9, x6, x5, #63
 	mul	x10, x17, x17
 	ldr	x16, [up,#-8]
 	adcs	x13, x9, x11
@@ -75,7 +79,8 @@ L(top):	extr	x9, x6, x5, #63
 	extr	x8, x7, x6, #63
 	stp	x12, x13, [rp],#16
 	adcs	x12, x8, x10
-L(mid):	extr	x9, x4, x7, #63
+L(mid):
+	extr	x9, x4, x7, #63
 	mul	x10, x16, x16
 	ldr	x17, [up],#16
 	adcs	x13, x9, x11
@@ -87,7 +92,8 @@ L(mid):	extr	x9, x4, x7, #63
 	sub	x14, x14, #1
 	cbnz	x14, L(top)
 
-L(end):	extr	x9, x6, x5, #63
+L(end):
+	extr	x9, x6, x5, #63
 	mul	x10, x17, x17
 	adcs	x13, x9, x11
 	umulh	x11, x17, x17
@@ -100,3 +106,4 @@ L(end):	extr	x9, x6, x5, #63
 
 	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

@@ -39,5 +39,7 @@ ifdef(`OPERATION_sublsh1_n',`define(`DO_sub')')
 ifdef(`OPERATION_rsblsh1_n',`define(`DO_rsb')')
 
 MULFUNC_PROLOGUE(mpn_addlsh1_n mpn_sublsh1_n mpn_rsblsh1_n)
+	BTI_C
 
 include_mpn(`arm64/aorsorrlshC_n.asm')
+ADD_GNU_NOTES_IF_NEEDED

@@ -58,35 +58,42 @@ define(`NSHIFT', lsr)
 
 ASM_START()
 PROLOGUE(mpn_lshiftc)
+	BTI_C
 	add	rp, rp_arg, n, lsl #3
 	add	up, up, n, lsl #3
 	sub	tnc, xzr, cnt
 	lsr	x17, n, #2
 	tbz	n, #0, L(bx0)
 
-L(bx1):	ldr	x4, [up,#-8]
+L(bx1):
+	ldr	x4, [up,#-8]
 	tbnz	n, #1, L(b11)
 
-L(b01):	NSHIFT	x0, x4, tnc
+L(b01):
+	NSHIFT	x0, x4, tnc
 	PSHIFT	x2, x4, cnt
 	cbnz	x17, L(gt1)
 	mvn	x2, x2
 	str	x2, [rp,#-8]
 	ret
-L(gt1):	ldp	x4, x5, [up,#-24]
+L(gt1):
+	ldp	x4, x5, [up,#-24]
 	sub	up, up, #8
 	add	rp, rp, #16
 	b	L(lo2)
 
-L(b11):	NSHIFT	x0, x4, tnc
+L(b11):
+	NSHIFT	x0, x4, tnc
 	PSHIFT	x2, x4, cnt
 	ldp	x6, x7, [up,#-24]!
 	b	L(lo3)
 
-L(bx0):	ldp	x4, x5, [up,#-16]
+L(bx0):
+	ldp	x4, x5, [up,#-16]
 	tbz	n, #1, L(b00)
 
-L(b10):	NSHIFT	x0, x5, tnc
+L(b10):
+	NSHIFT	x0, x5, tnc
 	PSHIFT	x13, x5, cnt
 	NSHIFT	x10, x4, tnc
 	PSHIFT	x2, x4, cnt
@@ -95,14 +102,16 @@ L(b10):	NSHIFT	x0, x5, tnc
 	mvn	x2, x2
 	stp	x2, x10, [rp,#-16]
 	ret
-L(gt2):	ldp	x4, x5, [up,#-32]
+L(gt2):
+	ldp	x4, x5, [up,#-32]
 	eon	x10, x10, x13
 	str	x10, [rp,#-8]
 	sub	up, up, #16
 	add	rp, rp, #8
 	b	L(lo2)
 
-L(b00):	NSHIFT	x0, x5, tnc
+L(b00):
+	NSHIFT	x0, x5, tnc
 	PSHIFT	x13, x5, cnt
 	NSHIFT	x10, x4, tnc
 	PSHIFT	x2, x4, cnt
@@ -112,12 +121,14 @@ L(b00):	NSHIFT	x0, x5, tnc
 	b	L(lo0)
 
 	ALIGN(16)
-L(top):	ldp	x4, x5, [up,#-16]
+L(top):
+	ldp	x4, x5, [up,#-16]
 	eon	x10, x10, x13
 	eon	x11, x12, x2
 	stp	x10, x11, [rp,#-16]
 	PSHIFT	x2, x6, cnt
-L(lo2):	NSHIFT	x10, x4, tnc
+L(lo2):
+	NSHIFT	x10, x4, tnc
 	PSHIFT	x13, x5, cnt
 	NSHIFT	x12, x5, tnc
 	ldp	x6, x7, [up,#-32]!
@@ -125,13 +136,16 @@ L(lo2):	NSHIFT	x10, x4, tnc
 	eon	x11, x12, x2
 	stp	x10, x11, [rp,#-32]!
 	PSHIFT	x2, x4, cnt
-L(lo0):	sub	x17, x17, #1
-L(lo3):	NSHIFT	x10, x6, tnc
+L(lo0):
+	sub	x17, x17, #1
+L(lo3):
+	NSHIFT	x10, x6, tnc
 	PSHIFT	x13, x7, cnt
 	NSHIFT	x12, x7, tnc
 	cbnz	x17, L(top)
 
-L(end):	eon	x10, x10, x13
+L(end):
+	eon	x10, x10, x13
 	eon	x11, x12, x2
 	PSHIFT	x2, x6, cnt
 	stp	x10, x11, [rp,#-16]
@@ -139,3 +153,4 @@ L(end):	eon	x10, x10, x13
 	str	x2, [rp,#-24]
 	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

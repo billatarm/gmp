@@ -62,6 +62,7 @@ ASM_START()
 	TEXT
 	ALIGN(32)
 PROLOGUE(mpn_mod_34lsub1)
+	BTI_C
 	subs	n, n, #3
 	mov	x8, #0
 	b.lt	L(le2)			C n <= 2
@@ -73,7 +74,8 @@ PROLOGUE(mpn_mod_34lsub1)
 	b.lt	L(sum)			C n <= 5
 	cmn	x0, #0			C clear carry
 
-L(top):	ldp	x5, x6, [ap, #0]
+L(top):
+	ldp	x5, x6, [ap, #0]
 	ldr	x7, [ap, #16]
 	add	ap, ap, #24
 	sub	n, n, #3
@@ -84,19 +86,23 @@ L(top):	ldp	x5, x6, [ap, #0]
 
 	adc	x8, xzr, xzr		C x8 <= 1
 
-L(sum):	cmn	n, #2
+L(sum):
+	cmn	n, #2
 	mov	x5, #0
 	b.lo	1f
 	ldr	x5, [ap], #8
-1:	mov	x6, #0
+1:
+	mov	x6, #0
 	b.ls	1f
 	ldr	x6, [ap], #8
-1:	adds	x2, x2, x5
+1:
+	adds	x2, x2, x5
 	adcs	x3, x3, x6
 	adcs	x4, x4, xzr
 	adc	x8, x8, xzr		C x8 <= 2
 
 L(sum2):
+
 	and	x0, x2, #0xffffffffffff
 	add	x0, x0, x2, lsr #48
 	add	x0, x0, x8
@@ -112,13 +118,16 @@ L(sum2):
 	add	x0, x0, x4, lsr #16
 	ret
 
-L(le2):	cmn	n, #1
+L(le2):
+	cmn	n, #1
 	b.ne	L(1)
 	ldp	x2, x3, [ap]
 	mov	x4, #0
 	b	L(sum2)
-L(1):	ldr	x2, [ap]
+L(1):
+	ldr	x2, [ap]
 	and	x0, x2, #0xffffffffffff
 	add	x0, x0, x2, lsr #48
 	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED
