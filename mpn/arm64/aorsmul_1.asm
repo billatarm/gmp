@@ -68,8 +68,10 @@ ifdef(`OPERATION_submul_1', `
   define(`func',	mpn_submul_1)')
 
 MULFUNC_PROLOGUE(mpn_addmul_1 mpn_submul_1)
+	BTI_C
 
 PROLOGUE(func)
+	BTI_C
 	adds	x15, xzr, xzr
 
 	tbz	n, #0, L(1)
@@ -82,7 +84,8 @@ PROLOGUE(func)
 	csinc	x15, x12, x12, COND
 	str	x8, [rp],#8
 
-L(1):	tbz	n, #1, L(2)
+L(1):
+	tbz	n, #1, L(2)
 
 	ldp	x4, x5, [up],#16
 	mul	x8, x4, v0
@@ -98,16 +101,19 @@ L(1):	tbz	n, #1, L(2)
 	csinc	x15, x15, x15, COND
 	stp	x8, x9, [rp],#16
 
-L(2):	lsr	n, n, #2
+L(2):
+	lsr	n, n, #2
 	cbz	n, L(le3)
 	ldp	x4, x5, [up],#32
 	ldp	x6, x7, [up,#-16]
 	b	L(mid)
-L(le3):	mov	x0, x15
+L(le3):
+	mov	x0, x15
 	ret
 
 	ALIGN(16)
-L(top):	ldp	x4, x5, [up],#32
+L(top):
+	ldp	x4, x5, [up],#32
 	ldp	x6, x7, [up,#-16]
 	ADDSUB	x8, x16, x8
 	ADDSUBC	x9, x17, x9
@@ -116,7 +122,8 @@ L(top):	ldp	x4, x5, [up],#32
 	ADDSUBC	x11, x13, x11
 	stp	x10, x11, [rp,#-16]
 	csinc	x15, x15, x15, COND
-L(mid):	sub	n, n, #1
+L(mid):
+	sub	n, n, #1
 	mul	x8, x4, v0
 	umulh	x12, x4, v0
 	mul	x9, x5, v0
@@ -143,3 +150,4 @@ L(mid):	sub	n, n, #1
 	csinc	x0, x15, x15, COND
 	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

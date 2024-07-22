@@ -58,34 +58,41 @@ define(`NSHIFT', lsl)
 
 ASM_START()
 PROLOGUE(mpn_rshift)
+	BTI_C
 	mov	rp, rp_arg
 	sub	tnc, xzr, cnt
 	lsr	x17, n, #2
 	tbz	n, #0, L(bx0)
 
-L(bx1):	ldr	x5, [up]
+L(bx1):
+	ldr	x5, [up]
 	tbnz	n, #1, L(b11)
 
-L(b01):	NSHIFT	x0, x5, tnc
+L(b01):
+	NSHIFT	x0, x5, tnc
 	PSHIFT	x2, x5, cnt
 	cbnz	x17, L(gt1)
 	str	x2, [rp]
 	ret
-L(gt1):	ldp	x4, x5, [up,#8]
+L(gt1):
+	ldp	x4, x5, [up,#8]
 	sub	up, up, #8
 	sub	rp, rp, #32
 	b	L(lo2)
 
-L(b11):	NSHIFT	x0, x5, tnc
+L(b11):
+	NSHIFT	x0, x5, tnc
 	PSHIFT	x2, x5, cnt
 	ldp	x6, x7, [up,#8]!
 	sub	rp, rp, #16
 	b	L(lo3)
 
-L(bx0):	ldp	x4, x5, [up]
+L(bx0):
+	ldp	x4, x5, [up]
 	tbz	n, #1, L(b00)
 
-L(b10):	NSHIFT	x0, x4, tnc
+L(b10):
+	NSHIFT	x0, x4, tnc
 	PSHIFT	x13, x4, cnt
 	NSHIFT	x10, x5, tnc
 	PSHIFT	x2, x5, cnt
@@ -93,12 +100,14 @@ L(b10):	NSHIFT	x0, x4, tnc
 	orr	x10, x10, x13
 	stp	x10, x2, [rp]
 	ret
-L(gt2):	ldp	x4, x5, [up,#16]
+L(gt2):
+	ldp	x4, x5, [up,#16]
 	orr	x10, x10, x13
 	str	x10, [rp],#-24
 	b	L(lo2)
 
-L(b00):	NSHIFT	x0, x4, tnc
+L(b00):
+	NSHIFT	x0, x4, tnc
 	PSHIFT	x13, x4, cnt
 	NSHIFT	x10, x5, tnc
 	PSHIFT	x2, x5, cnt
@@ -108,12 +117,14 @@ L(b00):	NSHIFT	x0, x4, tnc
 	b	L(lo0)
 
 	ALIGN(16)
-L(top):	ldp	x4, x5, [up,#16]
+L(top):
+	ldp	x4, x5, [up,#16]
 	orr	x10, x10, x13
 	orr	x11, x12, x2
 	stp	x11, x10, [rp,#16]
 	PSHIFT	x2, x7, cnt
-L(lo2):	NSHIFT	x10, x5, tnc
+L(lo2):
+	NSHIFT	x10, x5, tnc
 	NSHIFT	x12, x4, tnc
 	PSHIFT	x13, x4, cnt
 	ldp	x6, x7, [up,#32]!
@@ -121,16 +132,20 @@ L(lo2):	NSHIFT	x10, x5, tnc
 	orr	x11, x12, x2
 	stp	x11, x10, [rp,#32]!
 	PSHIFT	x2, x5, cnt
-L(lo0):	sub	x17, x17, #1
-L(lo3):	NSHIFT	x10, x7, tnc
+L(lo0):
+	sub	x17, x17, #1
+L(lo3):
+	NSHIFT	x10, x7, tnc
 	NSHIFT	x12, x6, tnc
 	PSHIFT	x13, x6, cnt
 	cbnz	x17, L(top)
 
-L(end):	orr	x10, x10, x13
+L(end):
+	orr	x10, x10, x13
 	orr	x11, x12, x2
 	PSHIFT	x2, x7, cnt
 	stp	x11, x10, [rp,#16]
 	str	x2, [rp,#32]
 	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

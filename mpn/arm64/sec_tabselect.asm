@@ -57,6 +57,7 @@ define(`maskq',  `v4')
 
 ASM_START()
 PROLOGUE(mpn_sec_tabselect)
+	BTI_C
 	dup	v7.2d, x4			C 2 `which' copies
 
 	mov	x10, #1
@@ -66,13 +67,15 @@ PROLOGUE(mpn_sec_tabselect)
 	b.mi	L(outer_end)
 
 L(outer_top):
+
 	mov	i, nents
 	mov	x12, tp				C preserve tp
 	movi	v5.16b, #0			C zero 2 counter copies
 	movi	v2.16b, #0
 	movi	v3.16b, #0
 	ALIGN(16)
-L(tp4):	cmeq	maskq.2d, v5.2d, v7.2d		C compare idx copies to `which' copies
+L(tp4):
+	cmeq	maskq.2d, v5.2d, v7.2d		C compare idx copies to `which' copies
 	ld1	{v0.2d,v1.2d}, [tp]
 	add	v5.2d, v5.2d, v6.2d
 	bit	v2.16b, v0.16b, maskq.16b
@@ -86,13 +89,15 @@ L(tp4):	cmeq	maskq.2d, v5.2d, v7.2d		C compare idx copies to `which' copies
 	b.pl	L(outer_top)
 L(outer_end):
 
+
 	tbz	n, #1, L(b0x)
 	mov	i, nents
 	mov	x12, tp
 	movi	v5.16b, #0			C zero 2 counter copies
 	movi	v2.16b, #0
 	ALIGN(16)
-L(tp2):	cmeq	maskq.2d, v5.2d, v7.2d
+L(tp2):
+	cmeq	maskq.2d, v5.2d, v7.2d
 	ld1	{v0.2d}, [tp]
 	add	v5.2d, v5.2d, v6.2d
 	bit	v2.16b, v0.16b, maskq.16b
@@ -102,13 +107,15 @@ L(tp2):	cmeq	maskq.2d, v5.2d, v7.2d
 	st1	{v2.2d}, [rp], #16
 	add	tp, x12, #16
 
-L(b0x):	tbz	n, #0, L(b00)
+L(b0x):
+	tbz	n, #0, L(b00)
 	mov	i, nents
 	mov	x12, tp
 	movi	v5.16b, #0			C zero 2 counter copies
 	movi	v2.16b, #0
 	ALIGN(16)
-L(tp1):	cmeq	maskq.2d, v5.2d, v7.2d
+L(tp1):
+	cmeq	maskq.2d, v5.2d, v7.2d
 	ld1	{v0.1d}, [tp]
 	add	v5.2d, v5.2d, v6.2d		C FIXME size should be `1d'
 	bit	v2.8b, v0.8b, maskq.8b
@@ -118,5 +125,7 @@ L(tp1):	cmeq	maskq.2d, v5.2d, v7.2d
 	st1	{v2.1d}, [rp], #8
 	add	tp, x12, #8
 
-L(b00):	ret
+L(b00):
+	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

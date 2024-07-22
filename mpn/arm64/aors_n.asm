@@ -60,56 +60,68 @@ ifdef(`OPERATION_sub_n', `
   define(`func_nc',	mpn_sub_nc)')
 
 MULFUNC_PROLOGUE(mpn_add_n mpn_add_nc mpn_sub_n mpn_sub_nc)
+	BTI_C
 
 ASM_START()
 PROLOGUE(func_nc)
+	BTI_C
 	SETCY(	x4)
 	b	L(ent)
 EPILOGUE()
 PROLOGUE(func_n)
+	BTI_C
 	CLRCY
-L(ent):	lsr	x17, n, #2
+L(ent):
+	lsr	x17, n, #2
 	tbz	n, #0, L(bx0)
 
-L(bx1):	ldr	x7, [up]
+L(bx1):
+	ldr	x7, [up]
 	ldr	x11, [vp]
 	ADDSUBC	x13, x7, x11
 	str	x13, [rp],#8
 	tbnz	n, #1, L(b11)
 
-L(b01):	cbz	x17, L(ret)
+L(b01):
+	cbz	x17, L(ret)
 	ldp	x4, x5, [up,#8]
 	ldp	x8, x9, [vp,#8]
 	sub	up, up, #8
 	sub	vp, vp, #8
 	b	L(mid)
 
-L(b11):	ldp	x6, x7, [up,#8]
+L(b11):
+	ldp	x6, x7, [up,#8]
 	ldp	x10, x11, [vp,#8]
 	add	up, up, #8
 	add	vp, vp, #8
 	cbz	x17, L(end)
 	b	L(top)
 
-L(bx0):	tbnz	n, #1, L(b10)
+L(bx0):
+	tbnz	n, #1, L(b10)
 
-L(b00):	ldp	x4, x5, [up]
+L(b00):
+	ldp	x4, x5, [up]
 	ldp	x8, x9, [vp]
 	sub	up, up, #16
 	sub	vp, vp, #16
 	b	L(mid)
 
-L(b10):	ldp	x6, x7, [up]
+L(b10):
+	ldp	x6, x7, [up]
 	ldp	x10, x11, [vp]
 	cbz	x17, L(end)
 
 	ALIGN(16)
-L(top):	ldp	x4, x5, [up,#16]
+L(top):
+	ldp	x4, x5, [up,#16]
 	ldp	x8, x9, [vp,#16]
 	ADDSUBC	x12, x6, x10
 	ADDSUBC	x13, x7, x11
 	stp	x12, x13, [rp],#16
-L(mid):	ldp	x6, x7, [up,#32]!
+L(mid):
+	ldp	x6, x7, [up,#32]!
 	ldp	x10, x11, [vp,#32]!
 	ADDSUBC	x12, x4, x8
 	ADDSUBC	x13, x5, x9
@@ -117,9 +129,12 @@ L(mid):	ldp	x6, x7, [up,#32]!
 	sub	x17, x17, #1
 	cbnz	x17, L(top)
 
-L(end):	ADDSUBC	x12, x6, x10
+L(end):
+	ADDSUBC	x12, x6, x10
 	ADDSUBC	x13, x7, x11
 	stp	x12, x13, [rp]
-L(ret):	RETVAL
+L(ret):
+	RETVAL
 	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

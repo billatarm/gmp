@@ -60,12 +60,14 @@ define(`chunksize',0x1ff0)
 
 ASM_START()
 PROLOGUE(mpn_hamdist)
+	BTI_C
 
 	mov	x11, #maxsize
 	cmp	n, x11
 	b.hi	L(gt8k)
 
-L(lt8k):
+L(lt8k):	BTI_C
+
 	movi	v4.16b, #0			C clear summation register
 	movi	v5.16b, #0			C clear summation register
 
@@ -77,7 +79,8 @@ L(lt8k):
 	cnt	v6.16b, v0.16b
 	uadalp	v4.8h,  v6.16b			C could also splat
 
-L(xx0):	tbz	n, #1, L(x00)
+L(xx0):
+	tbz	n, #1, L(x00)
 	sub	n, n, #2
 	ld1	{v0.2d}, [ap], #16		C load 2 limbs
 	ld1	{v16.2d}, [bp], #16		C load 2 limbs
@@ -85,13 +88,15 @@ L(xx0):	tbz	n, #1, L(x00)
 	cnt	v6.16b, v0.16b
 	uadalp	v4.8h,  v6.16b
 
-L(x00):	tbz	n, #2, L(000)
+L(x00):
+	tbz	n, #2, L(000)
 	subs	n, n, #4
 	ld1	{v0.2d,v1.2d}, [ap], #32	C load 4 limbs
 	ld1	{v16.2d,v17.2d}, [bp], #32	C load 4 limbs
 	b.ls	L(sum)
 
-L(gt4):	ld1	{v2.2d,v3.2d}, [ap], #32	C load 4 limbs
+L(gt4):
+	ld1	{v2.2d,v3.2d}, [ap], #32	C load 4 limbs
 	ld1	{v18.2d,v19.2d}, [bp], #32	C load 4 limbs
 	eor	v0.16b, v0.16b, v16.16b
 	eor	v1.16b, v1.16b, v17.16b
@@ -100,10 +105,12 @@ L(gt4):	ld1	{v2.2d,v3.2d}, [ap], #32	C load 4 limbs
 	cnt	v7.16b, v1.16b
 	b	L(mid)
 
-L(000):	subs	n, n, #8
+L(000):
+	subs	n, n, #8
 	b.lo	L(e0)
 
-L(chu):	ld1	{v2.2d,v3.2d}, [ap], #32	C load 4 limbs
+L(chu):	BTI_C
+	ld1	{v2.2d,v3.2d}, [ap], #32	C load 4 limbs
 	ld1	{v0.2d,v1.2d}, [ap], #32	C load 4 limbs
 	ld1	{v18.2d,v19.2d}, [bp], #32	C load 4 limbs
 	ld1	{v16.2d,v17.2d}, [bp], #32	C load 4 limbs
@@ -114,7 +121,8 @@ L(chu):	ld1	{v2.2d,v3.2d}, [ap], #32	C load 4 limbs
 	subs	n, n, #8
 	b.lo	L(end)
 
-L(top):	ld1	{v2.2d,v3.2d}, [ap], #32	C load 4 limbs
+L(top):
+	ld1	{v2.2d,v3.2d}, [ap], #32	C load 4 limbs
 	ld1	{v18.2d,v19.2d}, [bp], #32	C load 4 limbs
 	eor	v0.16b, v0.16b, v16.16b
 	eor	v1.16b, v1.16b, v17.16b
@@ -122,7 +130,8 @@ L(top):	ld1	{v2.2d,v3.2d}, [ap], #32	C load 4 limbs
 	cnt	v6.16b, v0.16b
 	uadalp	v5.8h,  v7.16b
 	cnt	v7.16b, v1.16b
-L(mid):	ld1	{v0.2d,v1.2d}, [ap], #32	C load 4 limbs
+L(mid):
+	ld1	{v0.2d,v1.2d}, [ap], #32	C load 4 limbs
 	ld1	{v16.2d,v17.2d}, [bp], #32	C load 4 limbs
 	eor	v2.16b, v2.16b, v18.16b
 	eor	v3.16b, v3.16b, v19.16b
@@ -133,9 +142,11 @@ L(mid):	ld1	{v0.2d,v1.2d}, [ap], #32	C load 4 limbs
 	cnt	v7.16b, v3.16b
 	b.hs	L(top)
 
-L(end):	uadalp	v4.8h,  v6.16b
+L(end):
+	uadalp	v4.8h,  v6.16b
 	uadalp	v5.8h,  v7.16b
-L(sum):	eor	v0.16b, v0.16b, v16.16b
+L(sum):
+	eor	v0.16b, v0.16b, v16.16b
 	eor	v1.16b, v1.16b, v17.16b
 	cnt	v6.16b, v0.16b
 	cnt	v7.16b, v1.16b
@@ -143,7 +154,8 @@ L(sum):	eor	v0.16b, v0.16b, v16.16b
 	uadalp	v5.8h,  v7.16b
 	add	v4.8h, v4.8h, v5.8h
 					C we have 8 16-bit counts
-L(e0):	uaddlp	v4.4s,  v4.8h		C we have 4 32-bit counts
+L(e0):
+	uaddlp	v4.4s,  v4.8h		C we have 4 32-bit counts
 	uaddlp	v4.2d,  v4.4s		C we have 2 64-bit counts
 	mov	x0, v4.d[0]
 	mov	x1, v4.d[1]
@@ -154,13 +166,15 @@ C Code for count > maxsize.  Splits operand and calls above code.
 define(`ap2', x5)			C caller-saves reg not used above
 define(`bp2', x6)			C caller-saves reg not used above
 L(gt8k):
+
 	mov	x8, x30
 	mov	x7, n			C full count (caller-saves reg not used above)
 	mov	x4, #0			C total sum  (caller-saves reg not used above)
 	mov	x9, #chunksize*8	C caller-saves reg not used above
 	mov	x10, #chunksize		C caller-saves reg not used above
 
-1:	add	ap2, ap, x9		C point at subsequent block
+1:
+	add	ap2, ap, x9		C point at subsequent block
 	add	bp2, bp, x9		C point at subsequent block
 	mov	n, #chunksize-8		C count for this invocation, adjusted for entry pt
 	movi	v4.16b, #0		C clear chunk summation register
@@ -179,3 +193,4 @@ L(gt8k):
 	mov	x30, x8
 	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

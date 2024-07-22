@@ -45,6 +45,7 @@ ASM_START()
 	TEXT
 	ALIGN(16)
 PROLOGUE(mpn_bdiv_dbm1c)
+	BTI_C
 	ldr	x5, [up], #8
 	ands	x6, n, #3
 	b.eq	L(fi0)
@@ -52,60 +53,72 @@ PROLOGUE(mpn_bdiv_dbm1c)
 	b.cc	L(fi1)
 	b.eq	L(fi2)
 
-L(fi3):	mul	x12, x5, bd
+L(fi3):
+	mul	x12, x5, bd
 	umulh	x13, x5, bd
 	ldr	x5, [up], #8
 	b	L(lo3)
 
-L(fi0):	mul	x10, x5, bd
+L(fi0):
+	mul	x10, x5, bd
 	umulh	x11, x5, bd
 	ldr	x5, [up], #8
 	b	L(lo0)
 
-L(fi1):	subs	n, n, #1
+L(fi1):
+	subs	n, n, #1
 	mul	x12, x5, bd
 	umulh	x13, x5, bd
 	b.ls	L(wd1)
 	ldr	x5, [up], #8
 	b	L(lo1)
 
-L(fi2):	mul	x10, x5, bd
+L(fi2):
+	mul	x10, x5, bd
 	umulh	x11, x5, bd
 	ldr	x5, [up], #8
 	b	L(lo2)
 
-L(top):	ldr	x5, [up], #8
+L(top):
+	ldr	x5, [up], #8
 	subs	x4, x4, x10
 	str	x4, [qp], #8
 	sbc	x4, x4, x11
-L(lo1):	mul	x10, x5, bd
+L(lo1):
+	mul	x10, x5, bd
 	umulh	x11, x5, bd
 	ldr	x5, [up], #8
 	subs	x4, x4, x12
 	str	x4, [qp], #8
 	sbc	x4, x4, x13
-L(lo0):	mul	x12, x5, bd
+L(lo0):
+	mul	x12, x5, bd
 	umulh	x13, x5, bd
 	ldr	x5, [up], #8
 	subs	x4, x4, x10
 	str	x4, [qp], #8
 	sbc	x4, x4, x11
-L(lo3):	mul	x10, x5, bd
+L(lo3):
+	mul	x10, x5, bd
 	umulh	x11, x5, bd
 	ldr	x5, [up], #8
 	subs	x4, x4, x12
 	str	x4, [qp], #8
 	sbc	x4, x4, x13
-L(lo2):	subs	n, n, #4
+L(lo2):
+	subs	n, n, #4
 	mul	x12, x5, bd
 	umulh	x13, x5, bd
 	b.hi	L(top)
 
-L(wd2):	subs	x4, x4, x10
+L(wd2):
+	subs	x4, x4, x10
 	str	x4, [qp], #8
 	sbc	x4, x4, x11
-L(wd1):	subs	x4, x4, x12
+L(wd1):
+	subs	x4, x4, x12
 	str	x4, [qp]
 	sbc	x0, x4, x13
 	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

@@ -56,6 +56,7 @@ define(`tnc', `x8')
 
 ASM_START()
 PROLOGUE(mpn_bdiv_q_1)
+	BTI_C
 
 	rbit	x6, d
 	clz	cnt, x6
@@ -79,17 +80,20 @@ PROLOGUE(mpn_bdiv_q_1)
 EPILOGUE()
 
 PROLOGUE(mpn_pi1_bdiv_q_1)
+	BTI_C
 	sub	n, n, #1
 	subs	x6, x6, x6		C clear r6 and C flag
 	ldr	x9, [up],#8
 	cbz	cnt, L(norm)
 
 L(unorm):
+
 	lsr	x12, x9, cnt
 	cbz	n, L(eu1)
 	sub	tnc, xzr, cnt
 
-L(tpu):	ldr	x9, [up],#8
+L(tpu):
+	ldr	x9, [up],#8
 	lsl	x7, x9, tnc
 	orr	x7, x7, x12
 	sbcs	x6, x7, x6
@@ -100,17 +104,20 @@ L(tpu):	ldr	x9, [up],#8
 	sub	n, n, #1
 	cbnz	n, L(tpu)
 
-L(eu1):	sbcs	x6, x12, x6
+L(eu1):
+	sbcs	x6, x12, x6
 	mul	x6, x6, di
 	str	x6, [rp]
 	ret
 
 L(norm):
+
 	mul	x5, x9, di
 	str	x5, [rp],#8
 	cbz	n, L(en1)
 
-L(tpn):	ldr	x9, [up],#8
+L(tpn):
+	ldr	x9, [up],#8
 	umulh	x5, x5, d
 	sbcs	x5, x9, x5
 	mul	x5, x5, di
@@ -118,5 +125,7 @@ L(tpn):	ldr	x9, [up],#8
 	sub	n, n, #1
 	cbnz	n, L(tpn)
 
-L(en1):	ret
+L(en1):
+	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

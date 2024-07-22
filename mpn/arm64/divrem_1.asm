@@ -66,6 +66,8 @@ dnl                      mp_limb_t d_unnorm, mp_limb_t dinv, int cnt)
 ASM_START()
 
 PROLOGUE(mpn_preinv_divrem_1)
+	BTI_C
+	SIGN_LR
 	cbz	n_arg, L(fz)
 	stp	x29, x30, [sp, #-80]!
 	mov	x29, sp
@@ -86,6 +88,8 @@ PROLOGUE(mpn_preinv_divrem_1)
 EPILOGUE()
 
 PROLOGUE(mpn_divrem_1)
+	BTI_C
+	SIGN_LR
 	cbz	n_arg, L(fz)
 	stp	x29, x30, [sp, #-80]!
 	mov	x29, sp
@@ -102,10 +106,12 @@ PROLOGUE(mpn_divrem_1)
 	tbnz	d_arg, #63, L(normalised)
 
 L(unnorm):
+
 	clz	cnt, d
 	lsl	x0, d, cnt
 	bl	GSYM_PREFIX`'MPN(invert_limb)
 L(uentry):
+
 	lsl	d, d, cnt
 	ldr	x7, [np], #-8
 	sub	tnc, xzr, cnt
@@ -113,7 +119,8 @@ L(uentry):
 	lsl	x1, x7, cnt
 	cbz	n, L(uend)
 
-L(utop):ldr	x7, [np], #-8
+L(utop):
+ldr	x7, [np], #-8
 	add	x2, x11, #1
 	mul	x10, x11, dinv
 	umulh	x17, x11, dinv
@@ -129,11 +136,13 @@ L(utop):ldr	x7, [np], #-8
 	sbc	x2, x2, xzr
 	cmp	x11, d
 	bcs	L(ufx)
-L(uok):	str	x2, [qp], #-8
+L(uok):
+	str	x2, [qp], #-8
 	sub	n, n, #1
 	cbnz	n, L(utop)
 
-L(uend):add	x2, x11, #1
+L(uend):
+add	x2, x11, #1
 	mul	x10, x11, dinv
 	umulh	x17, x11, dinv
 	adds	x10, x1, x10
@@ -154,24 +163,29 @@ L(uend):add	x2, x11, #1
 	ldp	x21, x22, [sp, #32]
 	ldp	x23, x24, [sp, #48]
 	ldp	x29, x30, [sp], #80
+	VERIFY_LR
 	ret
 
-L(ufx):	add	x2, x2, #1
+L(ufx):
+	add	x2, x2, #1
 	sub	x11, x11, d
 	b	L(uok)
 
 
 L(normalised):
+
 	mov	x0, d
 	bl	GSYM_PREFIX`'MPN(invert_limb)
 L(nentry):
+
 	ldr	x7, [np], #-8
 	subs	x14, x7, d
 	adc	x2, xzr, xzr		C hi q limb
 	csel	x11, x14, x7, cs
 	b	L(nok)
 
-L(ntop):ldr	x1, [np], #-8
+L(ntop):
+ldr	x1, [np], #-8
 	add	x2, x11, #1
 	mul	x10, x11, dinv
 	umulh	x17, x11, dinv
@@ -184,24 +198,30 @@ L(ntop):ldr	x1, [np], #-8
 	sbc	x2, x2, xzr
 	cmp	x11, d
 	bcs	L(nfx)
-L(nok):	str	x2, [qp], #-8
+L(nok):
+	str	x2, [qp], #-8
 	sub	n, n, #1
 	tbz	n, #63, L(ntop)
 
-L(nend):cbnz	fn, L(frac)
+L(nend):
+cbnz	fn, L(frac)
 	mov	x0, x11
 	ldp	x19, x20, [sp, #16]
 	ldp	x21, x22, [sp, #32]
 	ldp	x23, x24, [sp, #48]
 	ldp	x29, x30, [sp], #80
+	VERIFY_LR
 	ret
 
-L(nfx):	add	x2, x2, #1
+L(nfx):
+	add	x2, x2, #1
 	sub	x11, x11, d
 	b	L(nok)
 
-L(frac):mov	cnt, #0
-L(ftop):add	x2, x11, #1
+L(frac):
+mov	cnt, #0
+L(ftop):
+add	x2, x11, #1
 	mul	x10, x11, dinv
 	umulh	x17, x11, dinv
 	add	x2, x2, x17
@@ -219,13 +239,19 @@ L(ftop):add	x2, x11, #1
 	ldp	x21, x22, [sp, #32]
 	ldp	x23, x24, [sp, #48]
 	ldp	x29, x30, [sp], #80
+	VERIFY_LR
 	ret
 
 C Block zero. We need this for the degenerated case of n = 0, fn != 0.
-L(fz):	cbz	fn_arg, L(zend)
-L(ztop):str	xzr, [qp_arg], #8
+L(fz):
+	cbz	fn_arg, L(zend)
+L(ztop):
+str	xzr, [qp_arg], #8
 	sub	fn_arg, fn_arg, #1
 	cbnz	fn_arg, L(ztop)
-L(zend):mov	x0, #0
+L(zend):
+mov	x0, #0
+	VERIFY_LR
 	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

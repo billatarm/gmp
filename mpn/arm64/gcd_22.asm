@@ -56,9 +56,11 @@ define(`tnc',   `x8')
 
 ASM_START()
 PROLOGUE(mpn_gcd_22)
+	BTI_C
 
 	ALIGN(16)
-L(top):	subs	t0, u0, v0		C 0 6
+L(top):
+	subs	t0, u0, v0		C 0 6
 	cbz	t0, L(lowz)
 	sbcs	t1, u1, v1		C 1 7
 
@@ -66,7 +68,8 @@ L(top):	subs	t0, u0, v0		C 0 6
 
 	cneg	t0, t0, cc		C 2
 	cinv	t1, t1, cc		C 2 u = |u - v|
-L(bck):	csel	v0, v0, u0, cs		C 2
+L(bck):
+	csel	v0, v0, u0, cs		C 2
 	csel	v1, v1, u1, cs		C 2 v = min(u,v)
 
 	clz	cnt, cnt		C 2
@@ -85,18 +88,21 @@ L(bck):	csel	v0, v0, u0, cs		C 2
 	b.eq	L(end1)			C
 
 	ALIGN(16)
-L(top1):rbit	x12, x4			C			1,5
+L(top1):
+rbit	x12, x4			C			1,5
 	clz	x12, x12		C			2
 	csneg	x4, x4, x4, cs		C v = abs(u-v), even	1
 	csel	u0, v0, u0, cs		C u = min(u,v)		1
 	lsr	v0, x4, x12		C			3
 	subs	x4, u0, v0		C			4
 	b.ne	L(top1)			C
-L(end1):mov	x0, u0
+L(end1):
+mov	x0, u0
 	mov	x1, #0
 	ret
 
-L(lowz):C We come here when v0 - u0 = 0
+L(lowz):
+C We come here when v0 - u0 = 0
 	C 1. If v1 - u1 = 0, then gcd is u = v.
 	C 2. Else compute gcd_21({v1,v0}, |u1-v1|)
 	subs	t0, u1, v1
@@ -106,7 +112,9 @@ L(lowz):C We come here when v0 - u0 = 0
 	cneg	t0, t0, cc		C 2
 	b	L(bck)			C FIXME: make conditional
 
-L(end):	mov	x0, v0
+L(end):
+	mov	x0, v0
 	mov	x1, v1
 	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

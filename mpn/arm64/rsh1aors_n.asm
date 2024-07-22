@@ -56,18 +56,22 @@ ifdef(`OPERATION_rsh1sub_n', `
   define(`func_n',	mpn_rsh1sub_n)')
 
 MULFUNC_PROLOGUE(mpn_rsh1add_n mpn_rsh1sub_n)
+	BTI_C
 
 ASM_START()
 PROLOGUE(func_n)
+	BTI_C
 	lsr	x6, n, #2
 
 	tbz	n, #0, L(bx0)
 
-L(bx1):	ldr	x5, [up],#8
+L(bx1):
+	ldr	x5, [up],#8
 	ldr	x9, [vp],#8
 	tbnz	n, #1, L(b11)
 
-L(b01):	ADDSUB	x13, x5, x9
+L(b01):
+	ADDSUB	x13, x5, x9
 	and	x10, x13, #1
 	cbz	x6, L(1)
 	ldp	x4, x5, [up],#48
@@ -84,13 +88,15 @@ L(b01):	ADDSUB	x13, x5, x9
 	cbz	x6, L(end)
 	b	L(top)
 
-L(1):	cset	x14, COND
+L(1):
+	cset	x14, COND
 	extr	x17, x14, x13, #1
 	str	x17, [rp]
 	mov	x0, x10
 	ret
 
-L(b11):	ADDSUB	x15, x5, x9
+L(b11):
+	ADDSUB	x15, x5, x9
 	and	x10, x15, #1
 
 	ldp	x4, x5, [up],#32
@@ -106,13 +112,16 @@ L(b11):	ADDSUB	x15, x5, x9
 	str	x17, [rp], #8
 	b	L(mid)
 
-L(3):	extr	x17, x12, x15, #1
+L(3):
+	extr	x17, x12, x15, #1
 	str	x17, [rp], #8
 	b	L(2)
 
-L(bx0):	tbz	n, #1, L(b00)
+L(bx0):
+	tbz	n, #1, L(b00)
 
-L(b10):	ldp	x4, x5, [up],#32
+L(b10):
+	ldp	x4, x5, [up],#32
 	ldp	x8, x9, [vp],#32
 	ADDSUB	x12, x4, x8
 	ADDSUBC	x13, x5, x9
@@ -124,7 +133,8 @@ L(b10):	ldp	x4, x5, [up],#32
 	ADDSUBC	x15, x5, x9
 	b	L(mid)
 
-L(b00):	ldp	x4, x5, [up],#48
+L(b00):
+	ldp	x4, x5, [up],#48
 	ldp	x8, x9, [vp],#48
 	ADDSUB	x14, x4, x8
 	ADDSUBC	x15, x5, x9
@@ -138,14 +148,16 @@ L(b00):	ldp	x4, x5, [up],#48
 	cbz	x6, L(end)
 
 	ALIGN(16)
-L(top):	ldp	x4, x5, [up,#-16]
+L(top):
+	ldp	x4, x5, [up,#-16]
 	ldp	x8, x9, [vp,#-16]
 	extr	x16, x15, x14, #1
 	extr	x17, x12, x15, #1
 	ADDSUBC	x14, x4, x8
 	ADDSUBC	x15, x5, x9
 	stp	x16, x17, [rp,#-16]
-L(mid):	ldp	x4, x5, [up],#32
+L(mid):
+	ldp	x4, x5, [up],#32
 	ldp	x8, x9, [vp],#32
 	extr	x16, x13, x12, #1
 	extr	x17, x14, x13, #1
@@ -155,14 +167,18 @@ L(mid):	ldp	x4, x5, [up],#32
 	sub	x6, x6, #1
 	cbnz	x6, L(top)
 
-L(end):	extr	x16, x15, x14, #1
+L(end):
+	extr	x16, x15, x14, #1
 	extr	x17, x12, x15, #1
 	stp	x16, x17, [rp,#-16]
-L(2):	cset	x14, COND
+L(2):
+	cset	x14, COND
 	extr	x16, x13, x12, #1
 	extr	x17, x14, x13, #1
 	stp	x16, x17, [rp]
 
-L(ret):	mov	x0, x10
+L(ret):
+	mov	x0, x10
 	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

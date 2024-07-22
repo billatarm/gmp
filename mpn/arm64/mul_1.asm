@@ -51,19 +51,24 @@ define(`v0', `x3')
 
 
 PROLOGUE(mpn_mul_1c)
+	BTI_C
 	adds	xzr, xzr, xzr		C clear cy flag
 	b	L(com)
 EPILOGUE()
 
 PROLOGUE(mpn_mul_1)
+	BTI_C
 	adds	x4, xzr, xzr		C clear register and cy flag
-L(com):	lsr	x17, n, #2
+L(com):
+	lsr	x17, n, #2
 	tbnz	n, #0, L(bx1)
 
-L(bx0):	mov	x11, x4
+L(bx0):
+	mov	x11, x4
 	tbz	n, #1, L(b00)
 
-L(b10):	ldp	x4, x5, [up]
+L(b10):
+	ldp	x4, x5, [up]
 	mul	x8, x4, v0
 	umulh	x10, x4, v0
 	cbz	x17, L(2)
@@ -71,19 +76,23 @@ L(b10):	ldp	x4, x5, [up]
 	mul	x9, x5, v0
 	b	L(mid)-8
 
-L(2):	mul	x9, x5, v0
+L(2):
+	mul	x9, x5, v0
 	b	L(2e)
 
-L(bx1):	ldr	x7, [up],#8
+L(bx1):
+	ldr	x7, [up],#8
 	mul	x9, x7, v0
 	umulh	x11, x7, v0
 	adds	x9, x9, x4
 	str	x9, [rp],#8
 	tbnz	n, #1, L(b10)
 
-L(b01):	cbz	x17, L(1)
+L(b01):
+	cbz	x17, L(1)
 
-L(b00):	ldp	x6, x7, [up]
+L(b00):
+	ldp	x6, x7, [up]
 	mul	x8, x6, v0
 	umulh	x10, x6, v0
 	ldp	x4, x5, [up,#16]
@@ -95,7 +104,8 @@ L(b00):	ldp	x6, x7, [up]
 	cbz	x17, L(end)
 
 	ALIGN(16)
-L(top):	mul	x8, x4, v0
+L(top):
+	mul	x8, x4, v0
 	ldp	x6, x7, [up,#32]!
 	adcs	x13, x9, x10
 	umulh	x10, x4, v0
@@ -103,7 +113,8 @@ L(top):	mul	x8, x4, v0
 	stp	x12, x13, [rp,#-16]
 	adcs	x12, x8, x11
 	umulh	x11, x5, v0
-L(mid):	mul	x8, x6, v0
+L(mid):
+	mul	x8, x6, v0
 	ldp	x4, x5, [up,#16]
 	adcs	x13, x9, x10
 	umulh	x10, x6, v0
@@ -114,15 +125,19 @@ L(mid):	mul	x8, x6, v0
 	sub	x17, x17, #1
 	cbnz	x17, L(top)
 
-L(end):	mul	x8, x4, v0
+L(end):
+	mul	x8, x4, v0
 	adcs	x13, x9, x10
 	umulh	x10, x4, v0
 	mul	x9, x5, v0
 	stp	x12, x13, [rp,#-16]
-L(2e):	adcs	x12, x8, x11
+L(2e):
+	adcs	x12, x8, x11
 	umulh	x11, x5, v0
 	adcs	x13, x9, x10
 	stp	x12, x13, [rp]
-L(1):	adc	x0, x11, xzr
+L(1):
+	adc	x0, x11, xzr
 	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

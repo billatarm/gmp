@@ -49,6 +49,8 @@ CC=
 DEFS=
 ASM=
 SEEN_O=no
+M4_GENPATH=
+M4_GENERATED=
 
 for i in "$@"; do
   case $i in
@@ -72,6 +74,9 @@ for i in "$@"; do
     -o)
       SEEN_O=yes
       CC="$CC $i"
+      ;;
+    --m4-gen-path=*)
+      M4_GENPATH=`echo "$i" | sed 's/^--m4-gen-path=//'`
       ;;
     *)
       CC="$CC $i"
@@ -97,11 +102,23 @@ if test $SEEN_O = no; then
   CC="$CC -o $BASENAME.o"
 fi
 
-echo "$M4 $DEFS $ASM >$TMP"
-$M4 $DEFS $ASM >$TMP || exit
+# Does the architecture have any dynamically generated m4?
+# if so execute the generation script
+if test -n "$M4_GENPATH"; then
+  if ! test -f "$M4_GENPATH"; then
+    echo "$M4_GENPATH not found."
+    exit 1
+  fi
+  echo "$M4_GENPATH \"$CC\""
+  M4_GENERATED="${TMP%.*}.m4"
+  "$M4_GENPATH" "$CC" > "$M4_GENERATED" || exit
+fi
+
+echo "$M4 $DEFS $M4_GENERATED $ASM >$TMP"
+$M4 $DEFS "$M4_GENERATED" $ASM >$TMP || exit
 
 echo "$CC"
 $CC || exit
 
 # Comment this out to preserve .s intermediates
-rm -f $TMP
+#rm -f $TMP "$M4_GENERATED"

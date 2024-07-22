@@ -54,11 +54,13 @@ ASM_START()
 	TEXT
 	ALIGN(16)
 PROLOGUE(mpn_gcd_11)
+	BTI_C
 	subs	x3, u0, v0		C			0
 	b.eq	L(end)			C
 
 	ALIGN(16)
-L(top):	rbit	x12, x3			C			1,5
+L(top):
+	rbit	x12, x3			C			1,5
 	clz	x12, x12		C			2
 	csneg	x3, x3, x3, cs		C v = abs(u-v), even	1
 	csel	u0, v0, u0, cs		C u = min(u,v)		1
@@ -66,5 +68,7 @@ L(top):	rbit	x12, x3			C			1,5
 	subs	x3, u0, v0		C			4
 	b.ne	L(top)			C
 
-L(end):	ret
+L(end):
+	ret
 EPILOGUE()
+ADD_GNU_NOTES_IF_NEEDED

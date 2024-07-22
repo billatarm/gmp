@@ -65,13 +65,16 @@ ifdef(`DO_rsb', `
 
 ASM_START()
 PROLOGUE(func_n)
+	BTI_C
 	lsr	x6, n, #2
 	tbz	n, #0, L(bx0)
 
-L(bx1):	ldr	x5, [up]
+L(bx1):
+	ldr	x5, [up]
 	tbnz	n, #1, L(b11)
 
-L(b01):	ldr	x11, [vp]
+L(b01):
+	ldr	x11, [vp]
 	cbz	x6, L(1)
 	ldp	x8, x9, [vp,#8]
 	lsl	x13, x11, #LSH
@@ -81,14 +84,16 @@ L(b01):	ldr	x11, [vp]
 	sub	vp, vp, #8
 	b	L(mid)
 
-L(1):	lsl	x13, x11, #LSH
+L(1):
+	lsl	x13, x11, #LSH
 	ADDSUB(	x15, x13, x5)
 	str	x15, [rp]
 	lsr	x0, x11, RSH
 	RETVAL(	 x0, x1)
 	ret
 
-L(b11):	ldr	x9, [vp]
+L(b11):
+	ldr	x9, [vp]
 	ldp	x10, x11, [vp,#8]!
 	lsl	x13, x9, #LSH
 	ADDSUB(	x17, x13, x5)
@@ -97,27 +102,32 @@ L(b11):	ldr	x9, [vp]
 	cbz	x6, L(end)
 	b	L(top)
 
-L(bx0):	tbnz	n, #1, L(b10)
+L(bx0):
+	tbnz	n, #1, L(b10)
 
-L(b00):	CLRRCY(	x11)
+L(b00):
+	CLRRCY(	x11)
 	ldp	x8, x9, [vp],#-16
 	sub	up, up, #32
 	b	L(mid)
 
-L(b10):	CLRRCY(	x9)
+L(b10):
+	CLRRCY(	x9)
 	ldp	x10, x11, [vp]
 	sub	up, up, #16
 	cbz	x6, L(end)
 
 	ALIGN(16)
-L(top):	ldp	x4, x5, [up,#16]
+L(top):
+	ldp	x4, x5, [up,#16]
 	extr	x12, x10, x9, #RSH
 	ldp	x8, x9, [vp,#16]
 	extr	x13, x11, x10, #RSH
 	ADDSUBC(x14, x12, x4)
 	ADDSUBC(x15, x13, x5)
 	stp	x14, x15, [rp],#16
-L(mid):	ldp	x4, x5, [up,#32]!
+L(mid):
+	ldp	x4, x5, [up,#32]!
 	extr	x12, x8, x11, #RSH
 	ldp	x10, x11, [vp,#32]!
 	extr	x13, x9, x8, #RSH
@@ -127,7 +137,8 @@ L(mid):	ldp	x4, x5, [up,#32]!
 	sub	x6, x6, #1
 	cbnz	x6, L(top)
 
-L(end):	ldp	x4, x5, [up,#16]
+L(end):
+	ldp	x4, x5, [up,#16]
 	extr	x12, x10, x9, #RSH
 	extr	x13, x11, x10, #RSH
 	ADDSUBC(x14, x12, x4)

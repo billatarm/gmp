@@ -473,6 +473,11 @@ cc_64_cflags="-O"
 SPEED_CYCLECOUNTER_OBJ=
 cyclecounter_size=2
 
+# architectures can set this to add defines dynamically to m4 generation.
+# For example, in arm64 it is used to determine if PAC and BTI are enabled
+# and enable generation of those instructions in m4 asm.
+gen_path_m4=
+
 AC_SUBST(HAVE_HOST_CPU_FAMILY_power,  0)
 AC_SUBST(HAVE_HOST_CPU_FAMILY_powerpc,0)
 
@@ -781,6 +786,7 @@ case $host in
 	gcc_cflags_arch="-march=armv8-a"
 	gcc_cflags_neon="-mfpu=neon"
 	gcc_cflags_tune=""
+	gen_path_m4="arm64/gen-extra-m4.sh"
 	;;
       [applem[1-9]*])
 	abilist="64"
@@ -4050,6 +4056,12 @@ else
 fi
 AC_PROG_YACC
 AM_PROG_LEX
+
+# This may appear odd, however prefixing with m4 is
+# reserved in m4/autoconf but not in automake and
+# beyond. The prefixed version matches things like
+# gcc_c_flags.
+AC_SUBST([M4_GEN_PATH], [$gen_path_m4])
 
 # Create config.m4.
 GMP_FINISH

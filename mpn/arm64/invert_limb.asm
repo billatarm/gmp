@@ -40,6 +40,7 @@ C Compiler generated, mildly edited.  Could surely be further optimised.
 
 ASM_START()
 PROLOGUE(mpn_invert_limb)
+	BTI_C
 	lsr	x2, x0, #54
 	LEA_HI(	x1, approx_tab)
 	and	x2, x2, #0x1fe
@@ -81,3 +82,4 @@ approx_tab:
 forloop(i,256,512-1,dnl
 `	.hword	eval(0x7fd00/i)
 ')dnl
+ADD_GNU_NOTES_IF_NEEDED
